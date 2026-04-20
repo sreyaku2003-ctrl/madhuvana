@@ -2,15 +2,12 @@ services:
   - type: web
     name: searchable-pdf
     runtime: python
-    buildCommand: |
-      apt-get install -y tesseract-ocr libreoffice libgl1
-      pip install -r requirements.txt
+    buildCommand: pip install -r requirements.txt
     startCommand: gunicorn main:app
     envVars:
       - key: PYTHON_VERSION
         value: 3.11.0
-    disk:
-      name: uploads
-      mountPath: /opt/render/project/src/pdf_search
-      sizeGB: 1
- 
+    packages:
+      - tesseract-ocr
+      - libreoffice
+      - libgl1
