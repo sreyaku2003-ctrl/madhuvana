@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Search with Highlights</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f9;
+        }
+        .container {
+            width: 60%;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            margin-top: 50px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        input[type="file"] {
+            display: block;
+            margin: 20px auto;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px;
+            text-align: center;
+        }
+        .error {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Upload and Search PDFs</h1>
+        
+        <!-- Upload PDFs -->
+        <h3>Upload PDF Files</h3>
+        <form id="uploadForm" action="/api/upload_pdfs" method="POST" enctype="multipart/form-data">
+            <!-- File input for PDFs -->
+            <input type="file" name="files" multiple required>
+            <!-- Hidden input fields for metadata -->
+            <input type="text" id="fileName" name="file_name" placeholder="Enter file name" required>
+            <input type="text" id="filePath" name="file_path" placeholder="Enter file path" required>
+            <input type="text" id="refNo" name="Ref_no" placeholder="Enter reference number" required>
+            <button type="submit">Upload PDFs</button>
+        </form>
+
+        <hr>
+
+        <!-- Search PDFs -->
+        <h3>Search in PDFs</h3>
+        <input type="text" id="searchQuery" placeholder="Enter text to search">
+        <button onclick="searchPdfs()">Search</button>
+
+        <div id="searchResults" class="result"></div>
+    </div>
+
+    <script>
+        const uploadForm = document.getElementById('uploadForm');
+        const searchResultsDiv = document.getElementById('searchResults');
+
+        // Form submission event for uploading PDFs
+        uploadForm.onsubmit = async function (e) {
+            e.preventDefault();
+            const formData = new FormData(uploadForm);
+            
+            try {
+                // Submit the form data (including files and metadata)
+                const response = await fetch('/api/upload_pdfs', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                alert(data.message || "Upload complete!");
+            } catch (error) {
+                alert("Error uploading files.");
+            }
+        };
+
+        // Function to handle search functionality
+        async function searchPdfs() {
+            const query = document.getElementById('searchQuery').value.trim();
+            if (!query) {
+                alert('Please enter a search term.');
+                return;
+            }
+
+            try {
+                // Send the search query to the backend API
+                const response = await fetch(`/api/search?query=${query}`);
+                const data = await response.json();
+
+                searchResultsDiv.innerHTML = ''; // Clear previous results
+                if (data.results && data.results.length) {
+                    data.results.forEach(result => {
+                        const resultDiv = document.createElement('div');
+                        resultDiv.innerHTML = `
+                            <strong>${result.pdf}</strong> (Page: ${result.page})<br>
+                            Text: ${result.text} <br>
+                            <a href="/${result.pdf.replace('.pdf', '_highlighted.pdf')}" download>Download Highlighted PDF</a>
+                        `;
+                        searchResultsDiv.appendChild(resultDiv);
+                    });
+                } else {
+                    searchResultsDiv.innerHTML = 'No results found.';
+                }
+            } catch (error) {
+                searchResultsDiv.innerHTML = 'Error occurred while searching.';
+            }
+        }
+    </script>
+</body>
+</html>

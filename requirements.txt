@@ -1,0 +1,8 @@
+flask
+pymupdf
+pytesseract
+pillow
+python-docx
+opencv-python-headless
+numpy
+gunicorn
