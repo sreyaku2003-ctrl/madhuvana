@@ -18,5 +18,5 @@ COPY . .
 RUN mkdir -p pdf_search
 
 EXPOSE 10000
-
+RUN mkdir -p pdf_search
 CMD ["gunicorn", "--bind", "0.0.0.0:10000", "main:app"]
