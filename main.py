@@ -173,14 +173,12 @@ def process_image(file_path):
 def extract_text_from_pdf_main(pdf_path):
     text = ""
     doc = fitz.open(pdf_path)
-
     for page_num in range(doc.page_count):
         page = doc.load_page(page_num)
-        pix = page.get_pixmap(dpi=300)
+        pix = page.get_pixmap(dpi=150)  # Changed from 300 to 150
         img = Image.frombytes("RGB", [pix.width, pix.height], pix.samples)
         page_text = pytesseract.image_to_string(img)
         text += page_text
-
     return text
 
 
